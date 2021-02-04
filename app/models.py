@@ -19,3 +19,20 @@ class Location(db.Model):
     phone = db.Column(db.String, nullable=False)
 
     meals = db.relationship('Meal', cascade='all,delete', back_populates='location')
+
+
+class Meal(db.Model):
+    _to_expand = ()
+    _to_exclude = ('location', 'items')
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    name = db.Column(db.String, nullable=False)
+    date = db.Column(db.Date, nullable=False)
+    start_time = db.Column(db.String)
+    end_time = db.Column(db.String)
+
+    location_id = db.Column(db.String, db.ForeignKey('location.id'))
+    location = db.relationship('Location', back_populates='meals')
+
+    items = db.relationship(
+        'Item', secondary=meals_x_items, lazy='subquery',
+        backref=db.backref('meals', lazy=True))
