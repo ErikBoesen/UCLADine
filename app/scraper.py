@@ -7,6 +7,7 @@ import os
 import requests
 import datetime
 from bs4 import BeautifulSoup
+import html
 
 DATE_FMT = '%Y-%m-%d'
 TIME_FMT = '%H %a'
@@ -14,6 +15,30 @@ TIME_FMT = '%H %a'
 
 def scrape_item(item_element):
     pass
+
+
+def scrape_item(item_elem) -> Item:
+    item = Item()
+
+    link = item_elem.find('a', {'class': 'recipelink'})
+    # First try to fetch detail page.
+    html = requests.get(link['href'] + '/Boxed').text
+    soup = BeautifulSoup(html, 'html.parser').find('div', {'class': 'recipecontainer'})
+    if soup is not None:
+        item.name = soup.find('h2').text
+        info = soup.find('div', {'class': 'productinfo'})
+        item.description = info.find('div', {'class': 'description'})
+        traits = info.find_all('div', {'class': 'prodwebcode'})
+        for trait in traits:
+            setattr(item, trait_format(trait.text), True)
+        nutrition_elem = soup.find('div', {'class': 'nfbox'})
+        item.nutrition = scrape_nutrition(nutrition_elem)
+        ingredients = soup.find('div', {'class': 'ingred_allergen'}).find('p').find_all(text=True, recursive=False)[0].strip()
+        ingredients = html.unescape(ingredients)
+        item.ingredients = ingredients
+    else:
+        item.name = link.text.strip()
+
 
 
 def scrape():
