@@ -14,5 +14,5 @@ def scrape():
         return render_template('scraper.html')
     payload = request.get_json()
     print('Kicking off scraper.')
-    scraper.scrape.apply_async()
+    scraper.scrape_task.apply_async()
     return '', 200
