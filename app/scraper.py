@@ -45,15 +45,16 @@ def scrape_item(item_elem) -> Item:
             setattr(item, trait_format(trait.text), True)
         nutrition_elem = soup.find('div', {'class': 'nfbox'})
         item.nutrition = scrape_nutrition(nutrition_elem)
-        ingredients = soup.find('div', {'class': 'ingred_allergen'}).find('p').find_all(text=True, recursive=False)[0].strip()
-        ingredients = html.unescape(ingredients)
+        ingredients = soup.find('div', {'class': 'ingred_allergen'}).find('p').find(text=True, recursive=False)
+        if ingredients:
+            ingredients = html.unescape(ingredients.strip())
         item.ingredients = ingredients
     else:
         item.name = link.text.strip()
         description_elem = item_elem.find('div', {'class': 'item-description'})
-        description = description_elem.find_all(text=True, recursive=False)
+        description = description_elem.find(text=True, recursive=False)
         if description:
-            description = description[0].strip()
+            description = description.strip()
         item.description = description
         traits = description_elem.find_all('div', {'class': 'tt-prodwebcode'})
         for trait in traits:
@@ -75,6 +76,8 @@ def scrape():
                 course_name = sect.find_all(text=True, recursive=False)[0].strip()
                 item_list = sect.find('ul', {'class': 'item-list'})
                 item_elems = item_list.find_all('li', {'class': 'menu-item'})
+                # TODO: designate items as addons, and figure out how to deal with conflicting items where som have different addons
+                # Idea: put them all into a list and then insert them into the DB at the very end?
                 for item_elem in item_elems:
                     item = scrape_item(item_elem)
                     item.course = course_name
