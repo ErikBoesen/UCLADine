@@ -1,7 +1,7 @@
 from flask import Blueprint, request
 
 from app import db
-from app.models import Hall, Manager, Meal, Item, Nutrition
+from app.models import Location, Meal, Item, Nutrition
 from app.util import to_json
 
 import os
