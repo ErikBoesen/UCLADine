@@ -13,7 +13,19 @@ DATE_FMT = '%Y-%m-%d'
 TIME_FMT = '%H %a'
 
 
-def scrape_item(item_element):
+##################
+# Helper methods #
+##################
+
+def trait_format(label: str) -> str:
+    name = label.strip()
+    for seq in ('Contains ', ' Menu Option', ' Footprint')
+        name = name.replace(seq, '')
+    name = name.lower().replace(' ', '_')
+    return name
+
+
+def scrape_nutrition(nutrition_elem):
     pass
 
 
