@@ -38,9 +38,15 @@ class Meal(db.Model):
         backref=db.backref('meals', lazy=True))
 
 
+addons = db.Table('addons',
+    db.Column('parent_item_id', db.Integer, db.ForeignKey('user.id')),
+    db.Column('child_item_id', db.Integer, db.ForeignKey('user.id'))
+)
+
+
 class Item(db.Model):
-    _to_expand = ()
-    _to_exclude = ('meal', 'nutrition')
+    _to_expand = ('addons')
+    _to_exclude = ('meal', 'nutrition', 'parent')
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String, nullable=False)
     ingredients = db.Column(db.String)
@@ -63,6 +69,11 @@ class Item(db.Model):
     crustacean_shellfish = db.Column(db.Boolean, default=False)
     fish = db.Column(db.Boolean, default=False)
 
+    addons = db.relationship(
+        'Item', secondary=addons,
+        primaryjoin=(addons.c.parent_item_id == id),
+        secondaryjoin=(addons.c.child_item_id == id),
+        backref=db.backref('parent', lazy='dynamic'), lazy='dynamic')
     nutrition = db.relationship('Nutrition', cascade='all,delete,delete-orphan', uselist=False, back_populates='item')
 
 
