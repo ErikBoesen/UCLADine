@@ -55,10 +55,10 @@ def scrape():
             for sect in sects:
                 course_name = sect.find_all(text=True, recursive=False)[0].strip()
                 item_list = sect.find('ul', {'class': 'item-list'})
-                item_elements = item_list.find_all('li', {'class': 'menu-item'})
-                for item_element in item_elements:
-                    scrape_item(item_element)
-
+                item_elems = item_list.find_all('li', {'class': 'menu-item'})
+                for item_elem in item_elems:
+                    item = scrape_item(item_elem)
+                    item.course = course_name
 
 
 @celery.task
