@@ -36,3 +36,32 @@ class Meal(db.Model):
     items = db.relationship(
         'Item', secondary=meals_x_items, lazy='subquery',
         backref=db.backref('meals', lazy=True))
+
+
+class Item(db.Model):
+    _to_expand = ()
+    _to_exclude = ('meal', 'nutrition')
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    name = db.Column(db.String, nullable=False)
+    ingredients = db.Column(db.String)
+    course = db.Column(db.String)
+
+    vegetarian = db.Column(db.Boolean, default=False)
+    vegan = db.Column(db.Boolean, default=False)
+    halal = db.Column(db.Boolean, default=False)
+
+    low_carbon = db.Column(db.Boolean, default=False)
+    high_carbon = db.Column(db.Boolean, default=False)
+
+    peanuts = db.Column(db.Boolean, default=False)
+    tree_nuts = db.Column(db.Boolean, default=False)
+    wheat = db.Column(db.Boolean, default=False)
+    gluten = db.Column(db.Boolean, default=False)
+    soy = db.Column(db.Boolean, default=False)
+    dairy = db.Column(db.Boolean, default=False)
+    eggs = db.Column(db.Boolean, default=False)
+    crustacean_shellfish = db.Column(db.Boolean, default=False)
+    fish = db.Column(db.Boolean, default=False)
+
+    nutrition = db.relationship('Nutrition', cascade='all,delete,delete-orphan', uselist=False, back_populates='item')
+
