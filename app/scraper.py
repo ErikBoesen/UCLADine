@@ -50,7 +50,14 @@ def scrape_item(item_elem) -> Item:
         item.ingredients = ingredients
     else:
         item.name = link.text.strip()
-
+        description_elem = item_elem.find('div', {'class': 'item-description'})
+        description = description_elem.find_all(text=True, recursive=False)
+        if description:
+            description = description[0].strip()
+        item.description = description
+        traits = description_elem.find_all('div', {'class': 'tt-prodwebcode'})
+        for trait in traits:
+            setattr(item, trait_format(trait.text), True)
 
 
 def scrape():
