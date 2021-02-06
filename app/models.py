@@ -2,8 +2,8 @@ from app import app, db
 
 
 meals_x_items = db.Table('meals_x_items',
-    db.Column('meal_id', db.Integer, db.ForeignKey('meals.id'), nullable=False),
-    db.Column('item_id', db.Integer, db.ForeignKey('items.id'), nullable=False),
+    db.Column('meal_id', db.Integer, db.ForeignKey('meal.id'), nullable=False),
+    db.Column('item_id', db.Integer, db.ForeignKey('item.id'), nullable=False),
 )
 
 
@@ -39,8 +39,8 @@ class Meal(db.Model):
 
 
 addons = db.Table('addons',
-    db.Column('parent_item_id', db.Integer, db.ForeignKey('user.id')),
-    db.Column('child_item_id', db.Integer, db.ForeignKey('user.id'))
+    db.Column('parent_item_id', db.Integer, db.ForeignKey('item.id')),
+    db.Column('child_item_id', db.Integer, db.ForeignKey('item.id'))
 )
 
 
