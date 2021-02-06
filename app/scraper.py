@@ -4,6 +4,7 @@ from app.models import Location, Meal, Item, Nutrition
 from celery.schedules import crontab
 
 import os
+import json
 import requests
 import datetime
 from bs4 import BeautifulSoup
@@ -27,6 +28,7 @@ def trait_format(label: str) -> str:
 
 def scrape_nutrition(nutrition_elem):
     nutrition = Nutrition()
+
     nutrition.serving_size = nutrition_elem.find('p', {'class': 'nfserv'}).replace('Serving Size ', '')
     calories_elem = nutrition_elem.find('p', {'class': 'nfcal'})
     nutrition.calories = int(calories_elem.find(text=True, recursive=False))
@@ -53,6 +55,7 @@ def scrape_nutrition(nutrition_elem):
         name = vm_elem.find('span', {'class': 'nfvitname'}).text.lower().replace(' ', '_')
         pdv = int(vm_elem.find('span', {'class': 'nfvitpct'}).text.rstrip('%'))
         setattr(nutrition, name + '_pdv', pdv)
+    return nutrition
 
 
 def scrape_item(item_elem) -> Item:
@@ -85,17 +88,34 @@ def scrape_item(item_elem) -> Item:
         traits = description_elem.find_all('div', {'class': 'tt-prodwebcode'})
         for trait in traits:
             setattr(item, trait_format(trait.text), True)
+    return item
 
 
 def scrape():
-    hall_slugs = ['DeNeve']
-    for hall_slug in hall_slugs:
-        date = datetime.datetime.now().strftime(DATE_FMT)
-        html = requests.get(f'https://menu.dining.ucla.edu/Menus/{hall_slug}/{date}').text
+    with open('res/locations.json', 'r') as f:
+        location_data = json.load(f)
+    for location_slug in location_slugs:
+        location_name = location_slugs[location_slug]
+        location = Location.query.get(location_slug)
+        if location is None:
+            location = Location(
+                id=location_slug,
+                name=location_name,
+                open=False,
+            )
+            db.session.add(location)
+        date = datetime.date.today()
+        date_str = date.strftime(DATE_FMT)
+        html = requests.get(f'https://menu.dining.ucla.edu/Menus/{location_slug}/{date_str}').text
         soup = BeautifulSoup(html, 'html.parser').find('div', {'id': 'main-content'})
         cols = soup.find_all('div', {'class': 'menu-block'})
         for col in cols:
             meal_name = col.find('h3', {'class': 'col-header'})
+            meal = Meal()
+            meal.name = meal_name
+            meal.date = date
+            meal.location = location
+            db.session.add(meal)
             menu_list = col.find('ul', {'class': 'sect-list'})
             sects = col.find_all('li', {'class': 'sect-item'})
             for sect in sects:
@@ -107,6 +127,10 @@ def scrape():
                 for item_elem in item_elems:
                     item = scrape_item(item_elem)
                     item.course = course_name
+                    db.session.add(item)
+    db.session.commit()
+
+
 
 
 @celery.task
