@@ -63,8 +63,8 @@ def scrape_item(item_elem) -> Item:
 
     link = item_elem.find('a', {'class': 'recipelink'})
     # First try to fetch detail page.
-    html = requests.get(link['href'] + '/Boxed').text
-    soup = BeautifulSoup(html, 'html.parser').find('div', {'class': 'recipecontainer'})
+    page = requests.get(link['href'] + '/Boxed').text
+    soup = BeautifulSoup(page, 'html.parser').find('div', {'class': 'recipecontainer'})
     if soup is not None:
         item.name = soup.find('h2').text
         info = soup.find('div', {'class': 'productinfo'})
