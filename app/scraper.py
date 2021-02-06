@@ -34,6 +34,7 @@ def scrape_nutrition(nutrition_elem):
     if fat_calories.isnumeric():
         nutrition.fat_calories = int(fat_calories)
     nutrient_elems = nutrition_elem.find_all('p', {'class': 'nfnutrient'})
+    # Parse nutrition rows
     for nutrient_elem in nutrient_elems:
         tokens = nutrient_elem.text.strip().split()
         last = tokens.pop()
@@ -45,6 +46,12 @@ def scrape_nutrition(nutrition_elem):
         amount = last
         name = '_'.join(tokens).lower()
         setattr(nutrition, name, amount)
+        setattr(nutrition, name + '_pdv', pdv)
+    # Parse vitamins and minerals at bottom
+    vm_elems = nutrition_elem.find('span', {'class': ('nfvitleft', 'nfvitright')})
+    for vm_elem in vm_elems:
+        name = vm_elem.find('span', {'class': 'nfvitname'}).text.lower().replace(' ', '_')
+        pdv = int(vm_elem.find('span', {'class': 'nfvitpct'}).text.rstrip('%'))
         setattr(nutrition, name + '_pdv', pdv)
 
 
