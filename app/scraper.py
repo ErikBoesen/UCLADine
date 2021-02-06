@@ -26,7 +26,13 @@ def trait_format(label: str) -> str:
 
 
 def scrape_nutrition(nutrition_elem):
-    pass
+    nutrition = Nutrition()
+    nutrition.serving_size = nutrition_elem.find('p', {'class': 'nfserv'}).replace('Serving Size ', '')
+    calories_elem = nutrition_elem.find('p', {'class': 'nfcal'})
+    nutrition.calories = int(calories_elem.find(text=True, recursive=False))
+    fat_calories = nutrition_elem.find('span', {'class': 'nffatcal'}).text.replace('Fat Cal. ', '')
+    if fat_calories.isnumeric():
+        nutrition.fat_calories = int(fat_calories)
 
 
 def scrape_item(item_elem) -> Item:
