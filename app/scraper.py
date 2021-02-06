@@ -20,7 +20,7 @@ TIME_FMT = '%H %a'
 
 def trait_format(label: str) -> str:
     name = label.strip()
-    for seq in ('Contains ', ' Menu Option', ' Footprint')
+    for seq in ('Contains ', ' Menu Option', ' Footprint'):
         name = name.replace(seq, '')
     name = name.lower().replace(' ', '_')
     return name
