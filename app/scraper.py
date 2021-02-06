@@ -68,6 +68,11 @@ def scrape_nutrition(nutrition_elem):
 def scrape_item(item_elem) -> Item:
     item = Item()
 
+    # Check if entry starts with text indicating it's a topping or addon
+    target = item_elem.find('span', {'class': 'tooltip-target-wrapper'})
+    prefix = target.find(text=True, recursive=False).strip()
+    is_addon = (prefix in ('w/', '&'))
+
     link = item_elem.find('a', {'class': 'recipelink'})
     # First try to fetch detail page.
     page = requests.get(link['href'] + '/Boxed').text
@@ -102,7 +107,7 @@ def scrape_item(item_elem) -> Item:
         traits = description_elem.find_all('div', {'class': 'tt-prodwebcode'})
         for trait in traits:
             setattr(item, trait_format(trait.text), True)
-    return item
+    return is_addon, item
 
 
 def scrape():
