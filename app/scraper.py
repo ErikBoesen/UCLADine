@@ -27,6 +27,7 @@ def trait_format(label: str) -> str:
 
 
 def scrape_nutrition(nutrition_elem):
+    print('Getting nutrition facts.')
     nutrition = Nutrition()
 
     nutrition.serving_size = nutrition_elem.find('p', {'class': 'nfserv'}).text.replace('Serving Size ', '')
@@ -43,9 +44,14 @@ def scrape_nutrition(nutrition_elem):
         # Check if there's a percent daily value at the end of the line
         pdv = None
         if last.endswith('%'):
-            pdv = int(last.rstrip('%'))
+            pdv = last.rstrip('%')
+            if pdv != '--':
+                pdv = int(pdv)
+            else:
+                pdv = 0
             last = tokens.pop()
         amount = last
+        amount = amount.replace('--', '0')
         name = '_'.join(tokens).lower()
         setattr(nutrition, name, amount)
         setattr(nutrition, name + '_pdv', pdv)
@@ -53,8 +59,10 @@ def scrape_nutrition(nutrition_elem):
     vm_elems = nutrition_elem.find_all('span', {'class': ('nfvitleft', 'nfvitright')})
     for vm_elem in vm_elems:
         name = vm_elem.find('span', {'class': 'nfvitname'}).text.lower().replace(' ', '_')
-        pdv = int(vm_elem.find('span', {'class': 'nfvitpct'}).text.rstrip('%'))
-        setattr(nutrition, name + '_pdv', pdv)
+        pdv = vm_elem.find('span', {'class': 'nfvitpct'}).text.rstrip('%')
+        if pdv != '--':
+            pdv = int(pdv)
+            setattr(nutrition, name + '_pdv', pdv)
     return nutrition
 
 
@@ -67,6 +75,7 @@ def scrape_item(item_elem) -> Item:
     soup = BeautifulSoup(page, 'html.parser').find('div', {'class': 'recipecontainer'})
     if soup is not None:
         item.name = soup.find('h2').text
+        print('Parsing full report for ' + item.name)
         info = soup.find('div', {'class': 'productinfo'})
         item.description = info.find('div', {'class': 'description'})
         traits = info.find_all('div', {'class': 'prodwebcode'})
@@ -80,6 +89,7 @@ def scrape_item(item_elem) -> Item:
         item.ingredients = ingredients
     else:
         item.name = link.text.strip()
+        print('Parsing limited report for ' + item.name)
         description_elem = item_elem.find('div', {'class': 'item-description'})
         description = description_elem.find(text=True, recursive=False)
         if description:
@@ -95,6 +105,7 @@ def scrape():
     with open('res/locations.json', 'r') as f:
         locations_data = json.load(f)
     for location_slug in locations_data:
+        print('Parsing location ' + location_slug)
         location_data = locations_data[location_slug]
         location = Location.query.get(location_slug)
         if location is None:
@@ -106,11 +117,13 @@ def scrape():
             db.session.add(location)
         date = datetime.date.today()
         date_str = date.strftime(DATE_FMT)
+        print('Parsing date ' + date_str)
         html = requests.get(f'https://menu.dining.ucla.edu/Menus/{location_slug}/{date_str}').text
         soup = BeautifulSoup(html, 'html.parser').find('div', {'id': 'main-content'})
         cols = soup.find_all('div', {'class': 'menu-block'})
         for col in cols:
-            meal_name = col.find('h3', {'class': 'col-header'})
+            meal_name = col.find('h3', {'class': 'col-header'}).text
+            print('Parsing meal ' + meal_name)
             meal = Meal()
             meal.name = meal_name
             meal.date = date
