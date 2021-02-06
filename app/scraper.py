@@ -50,7 +50,7 @@ def scrape_nutrition(nutrition_elem):
         setattr(nutrition, name, amount)
         setattr(nutrition, name + '_pdv', pdv)
     # Parse vitamins and minerals at bottom
-    vm_elems = nutrition_elem.find('span', {'class': ('nfvitleft', 'nfvitright')})
+    vm_elems = nutrition_elem.find_all('span', {'class': ('nfvitleft', 'nfvitright')})
     for vm_elem in vm_elems:
         name = vm_elem.find('span', {'class': 'nfvitname'}).text.lower().replace(' ', '_')
         pdv = int(vm_elem.find('span', {'class': 'nfvitpct'}).text.rstrip('%'))
