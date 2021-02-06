@@ -52,6 +52,7 @@ class Item(db.Model):
     description = db.Column(db.String)
     ingredients = db.Column(db.String)
     course = db.Column(db.String)
+    image_url = db.Column(db.String)
 
     vegetarian = db.Column(db.Boolean, default=False)
     vegan = db.Column(db.Boolean, default=False)

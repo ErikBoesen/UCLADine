@@ -87,6 +87,9 @@ def scrape_item(item_elem) -> Item:
         if ingredients:
             ingredients = html.unescape(ingredients.strip())
         item.ingredients = ingredients
+        image = item_elem.find('img', {'class': 'recipeimage'})
+        if image is not None:
+            item.image_url = 'http://menu.dining.ucla.edu' + image['src']
     else:
         item.name = link.text.strip()
         print('Parsing limited report for ' + item.name)
