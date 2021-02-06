@@ -93,14 +93,14 @@ def scrape_item(item_elem) -> Item:
 
 def scrape():
     with open('res/locations.json', 'r') as f:
-        location_data = json.load(f)
-    for location_slug in location_slugs:
-        location_name = location_slugs[location_slug]
+        locations_data = json.load(f)
+    for location_slug in locations_data:
+        location_data = locations_data[location_slug]
         location = Location.query.get(location_slug)
         if location is None:
             location = Location(
                 id=location_slug,
-                name=location_name,
+                name=location_data['name'],
                 open=False,
             )
             db.session.add(location)
