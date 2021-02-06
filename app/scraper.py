@@ -13,7 +13,6 @@ import html
 DATE_FMT = '%Y-%m-%d'
 TIME_FMT = '%H %a'
 
-
 ##################
 # Helper methods #
 ##################
@@ -77,7 +76,9 @@ def scrape_item(item_elem) -> Item:
         item.name = soup.find('h2').text
         print('Parsing full report for ' + item.name)
         info = soup.find('div', {'class': 'productinfo'})
-        item.description = info.find('div', {'class': 'description'})
+        description_elem = info.find('div', {'class': 'description'})
+        if description_elem is not None:
+            item.description = description_elem.text
         traits = info.find_all('div', {'class': 'prodwebcode'})
         for trait in traits:
             setattr(item, trait_format(trait.text), True)
