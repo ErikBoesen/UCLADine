@@ -94,10 +94,10 @@ class Nutrition(db.Model):
     dietary_fiber = db.Column(db.String)
     total_sugars = db.Column(db.String)
     protein = db.Column(db.String)
-    vitamin_a = db.Column(db.String)
-    vitamin_c = db.Column(db.String)
-    calcium = db.Column(db.String)
-    iron = db.Column(db.String)
+    #vitamin_a = db.Column(db.String)
+    #vitamin_c = db.Column(db.String)
+    #calcium = db.Column(db.String)
+    #iron = db.Column(db.String)
 
     # Percent Daily Value
     total_fat_pdv = db.Column(db.Integer)

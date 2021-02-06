@@ -33,6 +33,19 @@ def scrape_nutrition(nutrition_elem):
     fat_calories = nutrition_elem.find('span', {'class': 'nffatcal'}).text.replace('Fat Cal. ', '')
     if fat_calories.isnumeric():
         nutrition.fat_calories = int(fat_calories)
+    nutrient_elems = nutrition_elem.find_all('p', {'class': 'nfnutrient'})
+    for nutrient_elem in nutrient_elems:
+        tokens = nutrient_elem.text.strip().split()
+        last = tokens.pop()
+        # Check if there's a percent daily value at the end of the line
+        pdv = None
+        if last.endswith('%'):
+            pdv = int(last.rstrip('%'))
+            last = tokens.pop()
+        amount = last
+        name = '_'.join(tokens).lower()
+        setattr(nutrition, name, amount)
+        setattr(nutrition, name + '_pdv', pdv)
 
 
 def scrape_item(item_elem) -> Item:
