@@ -47,7 +47,7 @@ addons = db.Table('addons',
 class Item(db.Model):
     _to_expand = ('addons')
     _to_exclude = ('meal', 'nutrition', 'parent')
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    id = db.Column(db.String, primary_key=True)
     name = db.Column(db.String, nullable=False)
     description = db.Column(db.String)
     ingredients = db.Column(db.String)
@@ -115,5 +115,5 @@ class Nutrition(db.Model):
     calcium_pdv = db.Column(db.Integer)
     iron_pdv = db.Column(db.Integer)
 
-    item_id = db.Column(db.Integer, db.ForeignKey('item.id'), primary_key=True)
+    item_id = db.Column(db.String, db.ForeignKey('item.id'), primary_key=True)
     item = db.relationship('Item', back_populates='nutrition')
