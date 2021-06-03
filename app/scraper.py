@@ -66,16 +66,19 @@ def scrape_nutrition(nutrition_elem):
 
 
 def scrape_item(item_elem) -> Item:
-    item = Item()
-
     # Check if entry starts with text indicating it's a topping or addon
     target = item_elem.find('span', {'class': 'tooltip-target-wrapper'})
     prefix = target.find(text=True, recursive=False).strip()
     is_addon = (prefix in ('w/', '&'))
 
-    link = item_elem.find('a', {'class': 'recipelink'})
+    link = item_elem.find('a', {'class': 'recipelink'})['href']
+
+    # Chop URL to extract ID string
+    item_id = link.replace('http://menu.dining.ucla.edu/Recipes/', '')
+    item = Item(id=item_id)
+
     # First try to fetch detail page.
-    page = requests.get(link['href'] + '/Boxed').text
+    page = requests.get(link + '/Boxed').text
     soup = BeautifulSoup(page, 'html.parser').find('div', {'class': 'recipecontainer'})
     if soup is not None:
         item.name = soup.find('h2').text
@@ -146,10 +149,36 @@ def scrape():
                 item_elems = item_list.find_all('li', {'class': 'menu-item'})
                 # TODO: designate items as addons, and figure out how to deal with conflicting items where som have different addons
                 # Idea: put them all into a list and then insert them into the DB at the very end?
+                items = []
                 for item_elem in item_elems:
-                    item = scrape_item(item_elem)
+                    is_addon, item = scrape_item(item_elem)
                     item.course = course_name
-                    db.session.add(item)
+                    if not is_addon:
+                        items.append({
+                            'item': item,
+                            'addons': [],
+                        })
+                    else:
+                        items[-1]['addons'].append(item)
+                for item_set in items:
+                    item = item_set['item']
+                    addons = item_set['addons']
+                    existing_item = Item.query.get(item.id)
+                    if existing_item is None:
+                        db.session.add(item)
+                        for addon in addons:
+                            existing_addon = Item.query.get(addon.id)
+                            if existing_addon is None:
+                                db.session.add(addon)
+                                # TODO
+
+
+
+                            item.addons.append(addon)
+                    else:
+
+                    item.meals.append(meal)
+
     db.session.commit()
 
 
